@@ -11,8 +11,8 @@
   "scripts": {
     "dev": "nodemon --inspect --ignore server/public --ignore server/data --ignore client --exec 'node server'",
     "build:client": "webpack --config build/webpack.prod.config.js",
-    "build:linux": "npm run build:client && node build/linux && pkg -t node14-linux-x64 -o dist/linux/jemba .",
-    "build:win": "npm run build:client && node build/win && pkg -t node14-win-x64 -o dist/win/jemba ."
+    "build:linux": "npm run build:client && node build/linux && pkg -t node14-linux-x64 -C GZip -o dist/linux/jemba .",
+    "build:win": "npm run build:client && node build/win && pkg -t node14-win-x64 -C GZip -o dist/win/jemba ."
   },
   "repository": {
     "type": "git",
@@ -55,7 +55,7 @@
   "dependencies": {
     "@quasar/extras": "^1.12.0",
     "got": "^11.8.2",
-    "jembadb": "^1.0.0",
+    "jembadb": "^1.1.0",
     "lodash": "^4.17.21",
     "minimist": "^1.2.5",
     "quasar": "^2.3.2",
@@ -65,5 +65,4 @@
     "vuex-persistedstate": "^4.1.0",
     "ws": "^8.2.3"
   }
-
 }
