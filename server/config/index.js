@@ -8,7 +8,7 @@ let execDir = path.resolve(__dirname, '..');
 if (process.pkg)//production standalone package (pkg)
     execDir = path.dirname(process.execPath);
 
-const dataDir = `${execDir}/data`;
+const dataDir = `${execDir}/jemba-config`;
 
 module.exports = {
     branch: process.env.NODE_ENV,
@@ -18,13 +18,13 @@ module.exports = {
     dataDir: dataDir,
     logDir: `${dataDir}/log`,
     publicDir: `${execDir}/public`,
+    loggingEnabled: true,
 
     jembaDb: [
         {
-            dbName: 'webui',
-            thread: true,
+            dbName: 'config',
             openAll: true,
-        }
+        },
     ],
 
     server: {

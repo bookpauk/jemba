@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.12.0",
+    "fs-extra": "^10.0.0",
     "got": "^11.8.2",
     "jembadb": "^1.1.0",
     "lodash": "^4.17.21",
