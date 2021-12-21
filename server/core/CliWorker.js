@@ -20,17 +20,16 @@ class CliWorker {
 
     async runTTY() {
         return new Promise(() => {
-            console.log(`${this.config.name} v${this.config.version}, Node.js ${process.version}`);
-
             readline.emitKeypressEvents(process.stdin);
 
             process.stdin.setRawMode(true);
 
             let cmd = '';
-            const showPrompt = (text) => process.stdout.write(`\r>${text}`);
-            const newLine = () => process.stdout.write('\n');
+            const writeln = (text = '') => process.stdout.write(`${text}\n`); 
+            const prompt = (text = '') => process.stdout.write(`\r>${text}`);
 
-            showPrompt(cmd);
+            writeln(`${this.config.name} v${this.config.version}, jembaDb v${this.config.jembaDbVersion}, Node.js ${process.version}`);
+            prompt(cmd);
             process.stdin.on('keypress', async(str, key) => {
                 //console.log(str, key, key.sequence.length);
 
@@ -39,24 +38,25 @@ class CliWorker {
                         cmd += key.sequence;
                     } else if (cmd.length > 0) {
                         cmd = cmd.substring(0, cmd.length - 1);
-                        showPrompt(cmd + ' ');
+                        prompt(cmd + ' ');
                     }
-                    showPrompt(cmd);
+                    prompt(cmd);
                 }
 
                 if (key.name == 'return') {
                     try {
-                        newLine();
-                        await this.processLines([cmd]);
+                        writeln();
+                        if (cmd.trim() != '')
+                            await this.processLines([cmd]);
                     } catch(e) {
                         process.stdout.write(`ERROR: ${e.message}\n`);
                     }
                     cmd = '';
-                    showPrompt(cmd);
+                    prompt(cmd);
                 }
 
                 if (key.name == 'c' && key.ctrl) {
-                    newLine();
+                    writeln();
                     ayncExit.exit(1);
                 }
             });
