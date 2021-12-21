@@ -11,8 +11,8 @@
   "scripts": {
     "dev": "nodemon --inspect --ignore server/public --ignore server/data --ignore client --exec 'node server'",
     "build:client": "webpack --config build/webpack.prod.config.js",
-    "build:linux": "npm run build:client && node build/linux && pkg -t node14-linux-x64 -C GZip -o dist/linux/jemba .",
-    "build:win": "npm run build:client && node build/win && pkg -t node14-win-x64 -C GZip -o dist/win/jemba ."
+    "build:linux": "pkg -t node14-linux-x64 -C GZip -o dist/linux/jemba .",
+    "build:win": "pkg -t node14-win-x64 -C GZip -o dist/win/jemba ."
   },
   "repository": {
     "type": "git",
