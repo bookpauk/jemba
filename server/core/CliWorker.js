@@ -37,6 +37,8 @@ class CliWorker {
 
 
             let cmd = '';
+            let multiCmd = [];
+            let multiOn = false;
             let curPos = 0;
 
             const writeln = (text = '') => process.stdout.write(`${text}\n`); 
@@ -68,7 +70,7 @@ class CliWorker {
             prompt();
 
             const onKeyPress = async(str, key) => {
-                //console.log(str, key, key.sequence.length);
+                //console.log(key, str, key.sequence.length);
 
                 switch (key.name) {
                     case 'up':
@@ -120,6 +122,7 @@ class CliWorker {
                         }
                         break;
                     case 'return': 
+                    case 'enter': 
                         try {
                             writeln();
                             if (cmd.trim() != '') {
@@ -127,7 +130,7 @@ class CliWorker {
                                     cmdHistory.unshift(cmd);
                                     while (cmdHistory.length > 1000)
                                         cmdHistory.pop();
-                                    
+
                                     await db.insert({
                                         table,
                                         replace: true,
@@ -135,7 +138,23 @@ class CliWorker {
                                     });
                                 }
 
-                                await this.processLines([cmd]);
+                                switch (cmd) {
+                                    case '={':
+                                        multiOn = true;
+                                        break;
+                                    case '=}':
+                                        multiOn = false;
+                                        await this.processLines(multiCmd);
+                                        multiCmd = [];
+                                        break;
+
+                                    default:
+                                        if (multiOn)
+                                            multiCmd.push(cmd);
+                                        else
+                                            await this.processLines([cmd]);
+                                        break;
+                                }
                             }
                         } catch(e) {
                             process.stdout.write(`ERROR: ${e.message}\n`);
@@ -162,8 +181,24 @@ class CliWorker {
                 prevKey = key.name;
             };
 
-            process.stdin.on('keypress', (str, key) => {
-                onKeyPress(str, key).catch(reject);
+            let busy = false;
+            let keyQueue = [];
+            process.stdin.on('keypress', async(str, key) => {
+                keyQueue.push([str, key]);
+                if (busy)
+                    return;
+
+                busy = true;
+                try {
+                    while (keyQueue.length) {
+                        const item = keyQueue.shift();
+                        await onKeyPress(item[0], item[1]);
+                    }
+                } catch(e) {
+                    reject(e);
+                } finally {
+                    busy = false;
+                }
             });
         })().catch(reject); });
     }

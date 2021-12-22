@@ -43,7 +43,9 @@ class JembaRunner {
             if (line.indexOf('=') === 0) {//directive, one of ['=shorthand', '=purejs', '=includeDir(path)', '=include(path)', '=debug']
                 const directive = line.substring(1);            
 
-                if (directive == 'shorthand' || directive == 'purejs') {
+                if (directive == '{' || directive == '}') {
+                    //quiet
+                } else if (directive == 'shorthand' || directive == 'purejs') {
                     this.scriptMode = directive;
 
                 } else if (directive == 'debug') {
