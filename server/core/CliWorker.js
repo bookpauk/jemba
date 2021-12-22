@@ -21,12 +21,38 @@ class CliWorker {
 
             if (!process.stdin.isTTY)
                 await this.runIO();
-                            
+
         } else if (process.stdin.isTTY) {
             await this.runTTY();
         } else {
             await this.runIO();
         }
+    }
+
+    processConsoleCommand(cmd) {
+        switch (cmd) {
+            case '.help':
+                console.log(
+`.directives  Print list of available directives
+.exit        Exit the REPL
+.help        Print this help message`);
+                break;
+            //case '.exit' processed inside runTTY()
+            case '.directives':
+                console.log(
+`=shorthand           Allow using shorts "!." => "await db." and "!!." => "return await db." inside script
+=purejs              Do not use shorthand
+=setIncludeDir(path) Set script include directory to "path"
+=include(path)       Load specified script in place
+=debug               Show result function body instead of running it
+={                   REPL mode: start multiline script
+=}                   REPL mode: finish and run multiline script`);
+                break;
+            default:
+                return false;
+        }
+
+        return true;
     }
 
     async runTTY() {
@@ -51,10 +77,9 @@ class CliWorker {
 
             const writeln = (text = '') => process.stdout.write(`${text}\n`); 
             const prompt = () => {
-                process.stdout.write(`\x1B[2K\r>${cmd}`);
+                process.stdout.write(`\x1B[2K\r> ${cmd}`);
                 let toLeft = cmd.length - curPos;
-                while (toLeft-- > 0)
-                    process.stdout.write('\x1B[D');
+                process.stdout.write('\x1B[D'.repeat(toLeft));
             }
 
             let fh = [];
@@ -75,6 +100,7 @@ class CliWorker {
             }
 
             writeln(`${this.config.name} v${this.config.version}, jembaDb v${this.config.jembaDbVersion}, Node.js ${process.version}`);
+            writeln(`Type ".help" for more info`);
             prompt();
 
             const onKeyPress = async(str, key) => {
@@ -146,22 +172,27 @@ class CliWorker {
                                     });
                                 }
 
-                                switch (cmd) {
-                                    case '={':
-                                        multiOn = true;
-                                        break;
-                                    case '=}':
-                                        await this.processLines(multiCmd);
-                                        multiOn = false;
-                                        multiCmd = [];
-                                        break;
+                                if (!this.processConsoleCommand(cmd)) {
+                                    switch (cmd) {
+                                        case '.exit':
+                                            ayncExit.exit(1);
+                                            return;                                        
+                                        case '={':
+                                            multiOn = true;
+                                            break;
+                                        case '=}':
+                                            await this.processLines(multiCmd);
+                                            multiOn = false;
+                                            multiCmd = [];
+                                            break;
 
-                                    default:
-                                        if (multiOn)
-                                            multiCmd.push(cmd);
-                                        else
-                                            await this.processLines([cmd]);
-                                        break;
+                                        default:
+                                            if (multiOn)
+                                                multiCmd.push(cmd);
+                                            else
+                                                await this.processLines([cmd]);
+                                            break;
+                                    }
                                 }
                             }
                         } catch(e) {
