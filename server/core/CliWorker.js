@@ -14,8 +14,6 @@ class CliWorker {
     }
 
     async run() {
-        await this.configDb.open({table: 'cli'});
-
         if (process.stdin.isTTY) {
             await this.runTTY();
         } else {
@@ -24,27 +22,79 @@ class CliWorker {
     }
 
     async runTTY() {
-        return new Promise(() => {
+        return new Promise((resolve, reject) => { (async() => {
+            const db = this.configDb;
+            const table = 'cli';
+            await db.open({table});
+            let cmdHistory = [];
+            const rows = await db.select({table, where: '@@id(1)'});
+            if (rows.length)
+                cmdHistory = rows[0].data;
+
             readline.emitKeypressEvents(process.stdin);
 
             process.stdin.setRawMode(true);
 
+
             let cmd = '';
             let curPos = 0;
+
             const writeln = (text = '') => process.stdout.write(`${text}\n`); 
             const prompt = () => {
-                process.stdout.write(`\r>${cmd} \r>${cmd}`);
+                process.stdout.write(`\x1B[2K\r>${cmd}`);
                 let toLeft = cmd.length - curPos;
                 while (toLeft-- > 0)
                     process.stdout.write('\x1B[D');
             }
 
+            let fh = [];
+            let fhIndex = 0;
+            let prevKey = '';
+            const filterHistory = () => {
+                fhIndex = 0;
+                const result = cmdHistory.filter((item) => (item.indexOf(cmd) == 0));
+                if (result.length) {
+                    if (result[0] !== cmd) {
+                        result.unshift(cmd);
+                        fhIndex++;
+                    }
+                    if (result[result.length - 1] !== cmd)
+                        result.push(cmd);
+                }
+                return result;
+            }
+
             writeln(`${this.config.name} v${this.config.version}, jembaDb v${this.config.jembaDbVersion}, Node.js ${process.version}`);            
             prompt();
-            process.stdin.on('keypress', async(str, key) => {
+
+            const onKeyPress = async(str, key) => {
                 //console.log(str, key, key.sequence.length);
 
                 switch (key.name) {
+                    case 'up':
+                        if (prevKey == 'up' || prevKey == 'down') {
+                            if (fhIndex < fh.length - 1)
+                                fhIndex++;                        
+                        } else {
+                            fh = filterHistory();
+                        }
+                        if (fh.length) {
+                            cmd = fh[fhIndex];
+                            curPos = cmd.length;
+                        }
+                        break;
+                    case 'down':
+                        if (prevKey == 'up' || prevKey == 'down') {
+                            if (fhIndex > 0)
+                                fhIndex--;                        
+                        } else {
+                            fh = filterHistory();
+                        }
+                        if (fh.length) {
+                            cmd = fh[fhIndex];
+                            curPos = cmd.length;
+                        }
+                        break;
                     case 'left': 
                         if (curPos > 0) curPos--;
                         break;
@@ -72,8 +122,21 @@ class CliWorker {
                     case 'return': 
                         try {
                             writeln();
-                            if (cmd.trim() != '')
+                            if (cmd.trim() != '') {
+                                if (!cmdHistory.length || cmdHistory[0] !== cmd) {
+                                    cmdHistory.unshift(cmd);
+                                    while (cmdHistory.length > 1000)
+                                        cmdHistory.pop();
+                                    
+                                    await db.insert({
+                                        table,
+                                        replace: true,
+                                        rows: [{id: 1, data: cmdHistory}]
+                                    });
+                                }
+
                                 await this.processLines([cmd]);
+                            }
                         } catch(e) {
                             process.stdout.write(`ERROR: ${e.message}\n`);
                         }
@@ -96,8 +159,13 @@ class CliWorker {
                 }
 
                 prompt();
+                prevKey = key.name;
+            };
+
+            process.stdin.on('keypress', (str, key) => {
+                onKeyPress(str, key).catch(reject);
             });
-        });
+        })().catch(reject); });
     }
 
     async runIO() {
