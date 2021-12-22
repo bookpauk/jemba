@@ -2,7 +2,7 @@ const _ = require('lodash');
 const readline = require('readline');
 
 const ayncExit = new (require('./AsyncExit'))();//singleton
-const jembaConnManager = new (require('./db/JembaConnManager'))();//singleton
+const jembaConnManager = new (require('../db/JembaConnManager'))();//singleton
 
 const JembaRunner = require('./JembaRunner');
 
@@ -36,7 +36,7 @@ class CliWorker {
             writeln(`${this.config.name} v${this.config.version}, jembaDb v${this.config.jembaDbVersion}, Node.js ${process.version}`);
             prompt(cmd);
             process.stdin.on('keypress', async(str, key) => {
-                //console.log(str, key, key.sequence.length);
+                console.log(str, key, key.sequence.length);
 
                 if (key.sequence.length == 1 && !key.ctrl) {
                     if (key.name != 'backspace') {

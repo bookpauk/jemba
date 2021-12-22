@@ -128,6 +128,7 @@ class JembaConnManager {
             table, 
             quietIfExists: true,
         });
+        await db.open({table});
 
         // Get the list of already applied migrations
         let dbMigrations = await db.select({
