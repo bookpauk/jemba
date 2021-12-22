@@ -3,6 +3,7 @@ const readline = require('readline');
 
 const ayncExit = new (require('./AsyncExit'))();//singleton
 const jembaConnManager = new (require('../db/JembaConnManager'))();//singleton
+const utils = require('./utils');
 
 const JembaRunner = require('./JembaRunner');
 
@@ -99,7 +100,7 @@ class CliWorker {
                 return result;
             }
 
-            writeln(`${this.config.name} v${this.config.version}, jembaDb v${this.config.jembaDbVersion}, Node.js ${process.version}`);
+            writeln(utils.versionText(this.config));
             writeln(`Type ".help" for more info`);
             prompt();
 

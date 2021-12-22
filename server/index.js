@@ -1,4 +1,5 @@
 const fs = require('fs-extra');
+const utils = require('./core/utils');
 /*const path = require('path');
 const http = require('http');
 const WebSocket = require('ws');
@@ -21,7 +22,7 @@ async function init() {
     log = appLogger.log;
 
     //dirs
-    log(`${config.name} v${config.version}, jembaDb v${config.jembaDbVersion}, Node.js ${process.version}`);
+    log(utils.versionText(config));
     log('Initializing');
 
     await fs.ensureDir(config.dataDir);
@@ -29,6 +30,18 @@ async function init() {
     //connections
     const jembaConnManager = new (require('./db/JembaConnManager'))();//singleton
     await jembaConnManager.init(config, argv['auto-repair']);
+}
+
+function showHelp() {
+    console.log(utils.versionText(config));
+    console.log(
+`Usage: jemba [options] [script.jemba] [scripts...]
+
+Options:
+  --auto-repair  auto repair jemba-config DB
+  --help         print jemba command line options
+  --web-ui       run jemba in WebUI mode (http server)
+`);
 }
 
 async function mainWebUI() {
@@ -44,7 +57,9 @@ async function mainCli() {
 (async() => {
     try {
         await init();
-        if (argv['web-ui']) {
+        if (argv['help'])
+            showHelp();
+        else if (argv['web-ui']) {
             await mainWebUI();
         } else {
             await mainCli();

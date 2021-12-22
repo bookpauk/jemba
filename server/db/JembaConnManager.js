@@ -58,7 +58,7 @@ class JembaConnManager {
                 forceFileClosing: dbConfig.forceFileClosing
             });
 
-            if (dbConfig.openAll) {
+            if (dbConfig.openAll || forceAutoRepair || dbConfig.autoRepair) {
                 try {
                     await dbConn.openAll();
                 } catch(e) {
