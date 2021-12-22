@@ -23,7 +23,7 @@ class JembaRunner {
 
     //recursive
     async includeScript(scriptMode, includeDir, includeFile) {
-        const filePath = path.resolve(includeDir, includeFile);
+        const filePath = path.resolve(includeDir, includeFile);        
         if (this.includedPaths[filePath])
             throw new Error(`File has been included already: ${filePath}`);
 

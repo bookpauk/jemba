@@ -14,7 +14,15 @@ class CliWorker {
     }
 
     async run() {
-        if (process.stdin.isTTY) {
+        const argv = this.config.argv;
+        if (argv._.length) {
+
+            await this.runFiles(argv._);
+
+            if (!process.stdin.isTTY)
+                await this.runIO();
+                            
+        } else if (process.stdin.isTTY) {
             await this.runTTY();
         } else {
             await this.runIO();
@@ -228,6 +236,12 @@ class CliWorker {
                 reject(e);
             }
         });
+    }
+
+    async runFiles(files) {
+        const inputLines = [];
+        files.forEach(file => inputLines.push(`=include('${file}')`));
+        await this.processLines(inputLines);
     }
 
     async processLines(inputLines) {
