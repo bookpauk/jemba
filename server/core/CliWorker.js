@@ -14,7 +14,7 @@ class CliWorker {
     }
 
     async run() {
-        await this.configDb.open({table: 'cli-config'});
+        await this.configDb.open({table: 'cli'});
 
         if (process.stdin.isTTY) {
             await this.runTTY();
@@ -82,7 +82,6 @@ class CliWorker {
                         break;
                     default: 
                         if (key.sequence.length == 1 && !key.ctrl) {
-                            //cmd += key.sequence;
                             cmd = `${cmd.slice(0, curPos)}${key.sequence}${cmd.slice(curPos)}`;
                             curPos++;
                         }

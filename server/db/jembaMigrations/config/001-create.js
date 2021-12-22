@@ -1,18 +1,18 @@
 module.exports = {
     up: [
         ['create', {
-            table: 'cli-config'
+            table: 'cli'
         }],
         ['create', {
-            table: 'webui-config'
+            table: 'webui'
         }],
     ],    
     down: [
         ['drop', {
-            table: 'cli-config'
+            table: 'cli'
         }],
         ['drop', {
-            table: 'webui-config'
+            table: 'webui'
         }],
     ]
 };
