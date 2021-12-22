@@ -21,7 +21,7 @@ async function init() {
     log = appLogger.log;
 
     //dirs
-    log(`${config.name} v${config.version}, Node.js ${process.version}`);
+    log(`${config.name} v${config.version}, jembaDb v${config.jembaDbVersion}, Node.js ${process.version}`);
     log('Initializing');
 
     await fs.ensureDir(config.dataDir);
@@ -49,6 +49,7 @@ async function mainCli() {
         } else {
             await mainCli();
         }
+        log('Exit(0)');
         ayncExit.exit(0);
     } catch (e) {
         if (log)

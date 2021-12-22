@@ -66,7 +66,7 @@ class CliWorker {
                 return result;
             }
 
-            writeln(`${this.config.name} v${this.config.version}, jembaDb v${this.config.jembaDbVersion}, Node.js ${process.version}`);            
+            writeln(`${this.config.name} v${this.config.version}, jembaDb v${this.config.jembaDbVersion}, Node.js ${process.version}`);
             prompt();
 
             const onKeyPress = async(str, key) => {
@@ -143,8 +143,8 @@ class CliWorker {
                                         multiOn = true;
                                         break;
                                     case '=}':
-                                        multiOn = false;
                                         await this.processLines(multiCmd);
+                                        multiOn = false;
                                         multiCmd = [];
                                         break;
 

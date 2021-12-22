@@ -1,3 +1,4 @@
+const fs = require('fs').promises;
 const path = require('path');
 const JembaUtils = require('./JembaUtils');
 
@@ -23,7 +24,18 @@ class JembaRunner {
     //recursive
     async includeScript(scriptMode, includeDir, includeFile) {
         const filePath = path.resolve(includeDir, includeFile);
-        return (`//----> include ${scriptMode}, ${filePath}`);
+        if (this.includedPaths[filePath])
+            throw new Error(`File has been included already: ${filePath}`);
+
+        this.includedPaths[filePath] = true;
+        try {
+            includeDir = path.dirname(filePath);
+
+            const includeText = await fs.readFile(filePath, 'utf8');            
+            return await this.prepareScript(includeText.split('\n'), scriptMode, includeDir);
+        } finally {
+            delete this.includedPaths[filePath];
+        }
     }
 
     //recursive
@@ -33,27 +45,27 @@ class JembaRunner {
 
         const addNewBlock = () => {
             scriptBlocks.push({
-                mode: this.scriptMode,
+                mode: scriptMode,
                 lines
             });
             lines = [];
         };
 
         for (const line of inputLines) {
-            if (line.indexOf('=') === 0) {//directive, one of ['=shorthand', '=purejs', '=includeDir(path)', '=include(path)', '=debug']
+            if (line.indexOf('=') === 0) {//directive, one of ['=shorthand', '=purejs', '=setIncludeDir(path)', '=include(path)', '=debug', '={', '=}']
                 const directive = line.substring(1);            
 
                 if (directive == '{' || directive == '}') {
                     //quiet
                 } else if (directive == 'shorthand' || directive == 'purejs') {
-                    this.scriptMode = directive;
+                    scriptMode = directive;
 
                 } else if (directive == 'debug') {
                     this.debug = true;
 
                 } else { 
-                    const includeDirMatch = line.match(/=includeDir\(['"](.*)["']\)/);
-                    const includeMatch = line.match(/=include\(['"](.*)["']\)/);
+                    const includeDirMatch = line.match(/^=setIncludeDir\(['"](.*)["']\)$/);
+                    const includeMatch = line.match(/^=include\(['"](.*)["']\)$/);
 
                     if (includeDirMatch) {
                         includeDir = includeDirMatch[1];
@@ -76,9 +88,9 @@ class JembaRunner {
         for (const block of scriptBlocks) {
             if (block.lines.length) {
                 if (block.mode == 'purejs') {
-                    result += block.lines.join('\n') + '\n';
+                    result += block.lines.join('\n');
                 } else {
-                    result += this.substShorthand(block.lines.join('\n')) + '\n';                     
+                    result += this.substShorthand(block.lines.join('\n'));
                 }
 
             }
@@ -88,10 +100,10 @@ class JembaRunner {
     }
 
     async prepareScriptFunc(inputLines) {
-        this.includeStack = [];
+        this.includedPaths = {};
         const script = await this.prepareScript(inputLines, this.defaultScriptMode, this.defaultIncludeDir);
 
-        return `async(db, u) => {\n${script}}`;
+        return `async(db, u) => {\n${script}\n}`;
     }
 
     async run(inputLines) {
