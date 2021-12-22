@@ -2,15 +2,20 @@ const _ = require('lodash');
 const readline = require('readline');
 
 const ayncExit = new (require('./AsyncExit'))();//singleton
+const jembaConnManager = new (require('./db/JembaConnManager'))();//singleton
+
 const JembaRunner = require('./JembaRunner');
 
 class CliWorker {
     constructor(config) {
         this.config = config;
         this.jembaRunner = new JembaRunner(config);
+        this.configDb = jembaConnManager.db['config'];
     }
 
     async run() {
+        await this.configDb.open({table: 'cli-config'});
+
         if (process.stdin.isTTY) {
             await this.runTTY();
         } else {

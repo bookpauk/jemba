@@ -25,7 +25,6 @@ module.exports = {
     jembaDb: [
         {
             dbName: 'config',
-            openAll: true,
         },
     ],
 

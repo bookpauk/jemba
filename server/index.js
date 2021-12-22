@@ -54,7 +54,7 @@ async function mainCli() {
     } catch (e) {
         if (log)
             log(LM_FATAL, e.stack);
-        
+
         console.error(e.stack);
         ayncExit.exit(1);
     }
