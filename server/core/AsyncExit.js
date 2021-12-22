@@ -5,26 +5,22 @@ const exitSignals = ['SIGINT', 'SIGTERM', 'SIGBREAK', 'SIGHUP', 'uncaughtExcepti
 
 //singleton
 class AsyncExit {
-    constructor() {
+    constructor(signals = exitSignals, codeOnSignal = 2) {
         if (!instance) {
             this.onSignalCallbacks = new Map();
             this.callbacks = new Map();
             this.afterCallbacks = new Map();
             this.exitTimeout = defaultTimeout;
-            this.inited = false;
+            
+            this._init(signals, codeOnSignal);
+
             instance = this;
         }
 
         return instance;
     }
 
-    init(signals = null, codeOnSignal = 2) {
-        if (this.inited)
-            throw new Error('AsyncExit: initialized already');
-
-        if (!signals)
-            signals = exitSignals;
-
+    _init(signals, codeOnSignal) {
         const runSingalCallbacks = async(signal) => {
             for (const signalCallback of this.onSignalCallbacks.keys()) {
                 try {
@@ -41,8 +37,6 @@ class AsyncExit {
                 this.exit(codeOnSignal);
             });
         }
-
-        this.inited = true;
     }
 
     onSignal(signalCallback) {
