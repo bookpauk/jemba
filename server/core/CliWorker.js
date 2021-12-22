@@ -43,7 +43,7 @@ class CliWorker {
                 console.log(
 `=shorthand           Allow using shorts "!." => "await db." and "!!." => "return await db." inside script
 =purejs              Do not use shorthand
-=setIncludeDir(path) Set script include directory to "path"
+=setIncludeDir(path) Set script including directory to "path"
 =include(path)       Load specified script in place
 =debug               Show result function body instead of running it
 ={                   REPL mode: start multiline script
