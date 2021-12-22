@@ -30,40 +30,73 @@ class CliWorker {
             process.stdin.setRawMode(true);
 
             let cmd = '';
+            let curPos = 0;
             const writeln = (text = '') => process.stdout.write(`${text}\n`); 
-            const prompt = (text = '') => process.stdout.write(`\r>${text}`);
+            const prompt = () => {
+                process.stdout.write(`\r>${cmd} \r>${cmd}`);
+                let toLeft = cmd.length - curPos;
+                while (toLeft-- > 0)
+                    process.stdout.write('\x1B[D');
+            }
 
-            writeln(`${this.config.name} v${this.config.version}, jembaDb v${this.config.jembaDbVersion}, Node.js ${process.version}`);
-            prompt(cmd);
+            writeln(`${this.config.name} v${this.config.version}, jembaDb v${this.config.jembaDbVersion}, Node.js ${process.version}`);            
+            prompt();
             process.stdin.on('keypress', async(str, key) => {
-                console.log(str, key, key.sequence.length);
+                //console.log(str, key, key.sequence.length);
 
-                if (key.sequence.length == 1 && !key.ctrl) {
-                    if (key.name != 'backspace') {
-                        cmd += key.sequence;
-                    } else if (cmd.length > 0) {
-                        cmd = cmd.substring(0, cmd.length - 1);
-                        prompt(cmd + ' ');
-                    }
-                    prompt(cmd);
+                switch (key.name) {
+                    case 'left': 
+                        if (curPos > 0) curPos--;
+                        break;
+                    case 'right': 
+                        if (curPos < cmd.length) curPos++;
+                        break;
+                    case 'home': 
+                        curPos = 0;
+                        break;
+                    case 'end': 
+                        curPos = cmd.length;
+                        break;
+                    case 'backspace':
+                        if (curPos > 0) {
+                            cmd = `${cmd.slice(0, curPos - 1)}${cmd.slice(curPos)}`;
+                            if (curPos > 0)
+                                curPos--;
+                        }
+                        break;
+                    case 'delete':
+                        if (curPos < cmd.length) {
+                            cmd = `${cmd.slice(0, curPos)}${cmd.slice(curPos + 1)}`;
+                        }
+                        break;
+                    case 'return': 
+                        try {
+                            writeln();
+                            if (cmd.trim() != '')
+                                await this.processLines([cmd]);
+                        } catch(e) {
+                            process.stdout.write(`ERROR: ${e.message}\n`);
+                        }
+                        cmd = '';
+                        curPos = 0;
+                        break;
+                    default: 
+                        if (key.sequence.length == 1 && !key.ctrl) {
+                            //cmd += key.sequence;
+                            cmd = `${cmd.slice(0, curPos)}${key.sequence}${cmd.slice(curPos)}`;
+                            curPos++;
+                        }
+
+                        if (key.name == 'c' && key.ctrl) {
+                            writeln();
+                            ayncExit.exit(1);
+                            return;
+                        }
+
+                        break;
                 }
 
-                if (key.name == 'return') {
-                    try {
-                        writeln();
-                        if (cmd.trim() != '')
-                            await this.processLines([cmd]);
-                    } catch(e) {
-                        process.stdout.write(`ERROR: ${e.message}\n`);
-                    }
-                    cmd = '';
-                    prompt(cmd);
-                }
-
-                if (key.name == 'c' && key.ctrl) {
-                    writeln();
-                    ayncExit.exit(1);
-                }
+                prompt();
             });
         });
     }
