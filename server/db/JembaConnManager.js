@@ -11,9 +11,11 @@ let instance = null;
 
 //singleton
 class JembaConnManager {
-    constructor() {
+    constructor(config) {
         if (!instance) {
             this.inited = false;
+            this.config = config;
+            this._db = {};
 
             instance = this;
         }
@@ -21,12 +23,11 @@ class JembaConnManager {
         return instance;
     }
 
-    async init(config, forceAutoRepair = false, migs = jembaMigrations, undoLastMigration = false) {
+    async init(forceAutoRepair = false, migs = jembaMigrations, undoLastMigration = false) {
         if (this.inited)
             throw new Error('JembaConnManager initialized already');
 
-        this.config = config;
-        this._db = {};
+        ayncExit.add(this.close.bind(this));
 
         for (const dbConfig of this.config.jembaDb) {
             const dbPath = `${this.config.dataDir}/db/${dbConfig.dbName}`;
@@ -44,6 +45,7 @@ class JembaConnManager {
             } else {
                 dbConn = new JembaDb();
             }
+            this._db[dbConfig.dbName] = dbConn;
 
             log(`Open "${dbConfig.dbName}" begin`);
             await dbConn.openDb({
@@ -83,21 +85,15 @@ class JembaConnManager {
                 if (applied.length)
                     log(`${applied.length} migrations applied to "${dbConfig.dbName}"`);
             }
-
-            this._db[dbConfig.dbName] = dbConn;
         }
-
-        ayncExit.add(this.close.bind(this));
 
         this.inited = true;
     }
 
     async close() {
-        if (!this.inited)
-            return;
-
         for (const dbConfig of this.config.jembaDb) {
-            await this._db[dbConfig.dbName].closeDb();
+            if (this._db[dbConfig.dbName])
+                await this._db[dbConfig.dbName].closeDb();
         }
 
         this._db = {};
