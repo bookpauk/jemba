@@ -28,8 +28,8 @@ async function init() {
     await fs.ensureDir(config.dataDir);
 
     //connections
-    const jembaConnManager = new (require('./db/JembaConnManager'))(config);//singleton
-    await jembaConnManager.init(argv['auto-repair']);
+    const jembaConnManager = new (require('./db/JembaConnManager'))();//singleton
+    await jembaConnManager.init(config, argv['auto-repair']);
 }
 
 async function mainWebUI() {

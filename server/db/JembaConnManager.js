@@ -11,10 +11,9 @@ let instance = null;
 
 //singleton
 class JembaConnManager {
-    constructor(config) {
+    constructor() {
         if (!instance) {
             this.inited = false;
-            this.config = config;
             this._db = {};
 
             instance = this;
@@ -23,9 +22,12 @@ class JembaConnManager {
         return instance;
     }
 
-    async init(forceAutoRepair = false, migs = jembaMigrations, undoLastMigration = false) {
+    async init(config, forceAutoRepair = false, migs = jembaMigrations, undoLastMigration = false) {
         if (this.inited)
             throw new Error('JembaConnManager initialized already');
+
+        this.config = config;
+        this._db = {};
 
         ayncExit.add(this.close.bind(this));
 
