@@ -18,7 +18,7 @@ class JembaRunner {
     }
 
     substShorthand(text) {
-        return text.replace(/!!\./g, 'return await db.').replace(/!\./g, 'await db.');
+        return text.replace(/!!\./g, 'return await db.').replace(/!\./g, 'await db.').replace(/\$/g, 'u.vars.');
     }
 
     //recursive
@@ -103,7 +103,7 @@ class JembaRunner {
         this.includedPaths = {};
         const script = await this.prepareScript(inputLines, this.defaultScriptMode, this.defaultIncludeDir);
 
-        return `async(db, u) => {\n${script}\n}`;
+        return `async(db, u) => { \n${script}\n}`;
     }
 
     async run(inputLines) {

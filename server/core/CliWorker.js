@@ -41,7 +41,10 @@ class CliWorker {
             //case '.exit' processed inside runTTY()
             case '.directives':
                 console.log(
-`=shorthand           Allow using shorts "!." => "await db." and "!!." => "return await db." inside script
+`=shorthand           Allow using shorts inside script:
+                        "!." => "await db."
+                        "!!." => "return await db."
+                        "$" => "u.vars."                        
 =purejs              Do not use shorthand
 =setIncludeDir(path) Set script including directory to "path"
 =include(path)       Load specified script in place
@@ -78,7 +81,7 @@ class CliWorker {
 
             const writeln = (text = '') => process.stdout.write(`${text}\n`); 
             const prompt = () => {
-                process.stdout.write(`\x1B[2K\r> ${cmd}`);
+                process.stdout.write(`\x1B[2K\r> ${multiOn? '  ' : ''}${cmd}`);
                 let toLeft = cmd.length - curPos;
                 process.stdout.write('\x1B[D'.repeat(toLeft));
             }

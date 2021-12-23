@@ -3,18 +3,19 @@ const ayncExit = new (require('./AsyncExit'))();//singleton
 
 class JembaUtils {
     constructor() {
-        this.dbConn = {};
+        this._dbConn = {};
+        this.vars = {};//public
     }
 
     _use(connName, thread) {
-        let db = this.dbConn[connName];
+        let db = this._dbConn[connName];
         if (!db) {
             if (thread)
                 db = new JembaDbThread();
             else
                 db = new JembaDb();
             ayncExit.add(db.closeDb.bind(db));
-            this.dbConn[connName] = db;
+            this._dbConn[connName] = db;
         }
 
         return db;
