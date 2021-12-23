@@ -113,7 +113,7 @@ class JembaRunner {
         this.debug = false;
 
         const scriptFunc = await this.prepareScriptFunc(inputLines);
-        const runScript = new Function(`return ${scriptFunc}`)();
+        const runScript = new Function(`'use strict'; return ${scriptFunc}`)();
 
         if (this.debug)
             return scriptFunc;
