@@ -81,7 +81,7 @@ class CliWorker {
 
             const writeln = (text = '') => process.stdout.write(`${text}\n`); 
             const prompt = () => {
-                process.stdout.write(`\x1B[2K\r> ${multiOn? '  ' : ''}${cmd}`);
+                process.stdout.write(`\x1B[2K\r> ${multiOn && cmd.indexOf('=') !== 0 ? '  ' : ''}${cmd}`);
                 let toLeft = cmd.length - curPos;
                 process.stdout.write('\x1B[D'.repeat(toLeft));
             }
@@ -185,9 +185,12 @@ class CliWorker {
                                             multiOn = true;
                                             break;
                                         case '=}':
-                                            await this.processLines(multiCmd);
-                                            multiOn = false;
-                                            multiCmd = [];
+                                            try {
+                                                await this.processLines(multiCmd);
+                                            } finally {
+                                                multiOn = false;
+                                                multiCmd = [];
+                                            }
                                             break;
 
                                         default:
