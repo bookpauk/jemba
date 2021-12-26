@@ -4,7 +4,7 @@ const utils = require('./core/utils');
 const http = require('http');
 const WebSocket = require('ws');
 */
-const argv = require('minimist')(process.argv.slice(2));
+const argv = require('minimist')(process.argv.slice(2), {boolean: true});
 
 const ayncExit = new (require('./core/AsyncExit'))();//singleton
 
@@ -38,9 +38,10 @@ function showHelp() {
 `Usage: jemba [options] [script.jemba] [scripts...]
 
 Options:
-  --auto-repair  auto repair jemba-config DB
-  --help         print jemba command line options
-  --web-ui       run jemba in WebUI mode (http server)
+  --auto-repair  Auto repair jemba-config DB
+  --debug        Show result function body instead of running it
+  --help         Print jemba command line options
+  --web-ui       Run jemba in WebUI mode (http server)
 `);
 }
 

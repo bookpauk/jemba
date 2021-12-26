@@ -16,11 +16,12 @@ class CliWorker {
 
     async run() {
         const argv = this.config.argv;
+
         if (argv._.length) {
 
             await this.runFiles(argv._);
 
-            /*unexpected behavior in sublime
+            /*unexpected behavior on external execution
             if (!process.stdin.isTTY)
                 await this.runIO();
             */

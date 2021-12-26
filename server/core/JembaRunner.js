@@ -12,9 +12,9 @@ class JembaRunner {
             throw new Error(`Unknown --script-mode param value: ${scriptMode}`);
 
         const includeDir = config.argv['include-dir'];
-
         this.defaultScriptMode = (scriptMode ? scriptMode : 'shorthand');//'shorthand', 'purejs'
         this.defaultIncludeDir = (includeDir ? includeDir : process.cwd());
+        this.defaultDebug = config.argv['debug'];
     }
 
     substShorthand(text) {
@@ -110,7 +110,7 @@ class JembaRunner {
         const u = this.jembaUtils;
         const db = u.use('default');
 
-        this.debug = false;
+        this.debug = this.defaultDebug;
 
         const scriptFunc = await this.prepareScriptFunc(inputLines);
         const runScript = new Function(`'use strict'; return ${scriptFunc}`)();
