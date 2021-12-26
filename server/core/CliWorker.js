@@ -52,7 +52,8 @@ class CliWorker {
 //=purejs              Do not use shorthand
 //=setIncludeDir(path) Set script including directory to "path"
 //=include(path)       Load specified script in place
-//=debug               Show result function body instead of running it
+//=debug               Show result function body (without includes) instead of running it
+//=debug-full          Show full result function body (with includes) instead of running it
 ={                     REPL mode: start multiline script
 =}                     REPL mode: finish and run multiline script`);
                 break;

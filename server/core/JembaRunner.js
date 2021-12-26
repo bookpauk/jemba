@@ -15,6 +15,7 @@ class JembaRunner {
         this.defaultScriptMode = (scriptMode ? scriptMode : 'shorthand');//'shorthand', 'purejs'
         this.defaultIncludeDir = (includeDir ? includeDir : process.cwd());
         this.defaultDebug = config.argv['debug'];
+        this.defaultDebugFull = config.argv['debug-full'];
     }
 
     substShorthand(text) {
@@ -39,7 +40,7 @@ class JembaRunner {
     }
 
     //recursive
-    async prepareScript(inputLines, includeDir) {
+    async prepareScript(inputLines, includeDir, prepareDebug = false) {
         const scriptBlocks = [];
         let lines = null;
 
@@ -55,7 +56,7 @@ class JembaRunner {
         addNewBlock(scriptMode);
 
         for (const line of inputLines) {
-            if (line.indexOf('//=') === 0) {//directive, one of ['=shorthand', '=purejs', '=setIncludeDir(path)', '=include(path)', '=debug', '={', '=}']
+            if (line.indexOf('//=') === 0) {//directive, one of ['=shorthand', '=purejs', '=setIncludeDir(path)', '=include(path)', '=debug', '=debug-full', '={', '=}']
                 const directive = line.substring(3);
                 addNewBlock('purejs');
                 lines.push(line);
@@ -66,6 +67,9 @@ class JembaRunner {
                 } else if (directive == 'debug') {
                     this.debug = true;
 
+                } else if (directive == 'debug-full') {
+                    this.debugFull = true;
+
                 } else { 
                     const includeDirMatch = line.match(/^\/\/=setIncludeDir\(['"](.*)["']\)$/);
                     const includeMatch = line.match(/^\/\/=include\(['"](.*)["']\)$/);
@@ -74,7 +78,8 @@ class JembaRunner {
                         includeDir = includeDirMatch[1];
                     } else if (includeMatch) {
                         const includeFile = includeMatch[1];
-                        lines.push(await this.includeScript(includeDir, includeFile));
+                        if (!prepareDebug)
+                            lines.push(await this.includeScript(includeDir, includeFile));
                     } else {
                         throw new Error(`Error parsing directive: ${directive}`);
                     }
@@ -103,9 +108,9 @@ class JembaRunner {
         return result;
     }
 
-    async prepareScriptFunc(inputLines) {
+    async prepareScriptFunc(inputLines, prepareDebug = false) {
         this.includedPaths = {};
-        const script = await this.prepareScript(inputLines, this.defaultIncludeDir);
+        const script = await this.prepareScript(inputLines, this.defaultIncludeDir, prepareDebug);
 
         return `async(db, u) => { ${script}\n}`;
     }
@@ -115,15 +120,19 @@ class JembaRunner {
         const db = u.use('default');
 
         this.debug = this.defaultDebug;
+        this.debugFull = this.defaultDebugFull;
 
-        const scriptFunc = await this.prepareScriptFunc(inputLines);
+        let scriptFunc = await this.prepareScriptFunc(inputLines);
 
-        const runScript = new Function(`'use strict'; return ${scriptFunc}`)();
-
-        if (this.debug)
+        if (this.debug) {
+            scriptFunc = await this.prepareScriptFunc(inputLines, this.debug);
             return scriptFunc;
-        else
+        } if (this.debugFull) {
+            return scriptFunc;
+        } else {
+            const runScript = new Function(`'use strict'; return ${scriptFunc}`)();
             return await runScript(db, u);
+        }
     }
 }
 

@@ -39,7 +39,8 @@ function showHelp() {
 
 Options:
   --auto-repair  Auto repair jemba-config DB
-  --debug        Show result function body instead of running it
+  --debug        Show result function body (without includes) instead of running it
+  --debug-full   Show full result function body (with includes) instead of running it
   --help         Print jemba command line options
   --web-ui       Run jemba in WebUI mode (http server)
 `);
