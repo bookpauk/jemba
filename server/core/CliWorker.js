@@ -1,3 +1,4 @@
+const fs = require('fs').promises;
 const _ = require('lodash');
 const readline = require('readline');
 
@@ -44,16 +45,16 @@ class CliWorker {
             //case '.exit' processed inside runTTY()
             case '.directives':
                 console.log(
-`=shorthand           Allow using shorts inside script:
+`//=shorthand           Allow using shorts inside script:
                         "!." => "await db."
                         "!!." => "return await db."
                         "$" => "u.vars."                        
-=purejs              Do not use shorthand
-=setIncludeDir(path) Set script including directory to "path"
-=include(path)       Load specified script in place
-=debug               Show result function body instead of running it
-={                   REPL mode: start multiline script
-=}                   REPL mode: finish and run multiline script`);
+//=purejs              Do not use shorthand
+//=setIncludeDir(path) Set script including directory to "path"
+//=include(path)       Load specified script in place
+//=debug               Show result function body instead of running it
+={                     REPL mode: start multiline script
+=}                     REPL mode: finish and run multiline script`);
                 break;
             default:
                 return false;
@@ -280,8 +281,12 @@ class CliWorker {
     }
 
     async runFiles(files) {
-        const inputLines = [];
-        files.forEach(file => inputLines.push(`=include('${file}')`));
+        let inputLines = [];
+        for (const file of files) {
+            const includeText = await fs.readFile(file, 'utf8');
+            inputLines = inputLines.concat(includeText.split('\n'));
+        }
+
         await this.processLines(inputLines);
     }
 

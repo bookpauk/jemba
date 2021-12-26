@@ -22,7 +22,7 @@ class JembaRunner {
     }
 
     //recursive
-    async includeScript(scriptMode, includeDir, includeFile) {
+    async includeScript(includeDir, includeFile) {
         const filePath = path.resolve(includeDir, includeFile);        
         if (this.includedPaths[filePath])
             throw new Error(`File has been included already: ${filePath}`);
@@ -31,68 +31,72 @@ class JembaRunner {
         try {
             includeDir = path.dirname(filePath);
 
-            const includeText = await fs.readFile(filePath, 'utf8');            
-            return await this.prepareScript(includeText.split('\n'), scriptMode, includeDir);
+            const includeText = await fs.readFile(filePath, 'utf8');
+            return await this.prepareScript(includeText.split('\n'), includeDir);
         } finally {
             delete this.includedPaths[filePath];
         }
     }
 
     //recursive
-    async prepareScript(inputLines, scriptMode, includeDir) {
+    async prepareScript(inputLines, includeDir) {
         const scriptBlocks = [];
-        let lines = [];
+        let lines = null;
 
-        const addNewBlock = () => {
+        const addNewBlock = (mode) => {
+            lines = [];
             scriptBlocks.push({
-                mode: scriptMode,
+                mode,
                 lines
             });
-            lines = [];
         };
 
-        for (const line of inputLines) {
-            if (line.indexOf('=') === 0) {//directive, one of ['=shorthand', '=purejs', '=setIncludeDir(path)', '=include(path)', '=debug', '={', '=}']
-                const directive = line.substring(1);            
+        let scriptMode = this.defaultScriptMode;
+        addNewBlock(scriptMode);
 
-                if (directive == '{' || directive == '}') {
-                    //quiet
-                } else if (directive == 'shorthand' || directive == 'purejs') {
+        for (const line of inputLines) {
+            if (line.indexOf('//=') === 0) {//directive, one of ['=shorthand', '=purejs', '=setIncludeDir(path)', '=include(path)', '=debug', '={', '=}']
+                const directive = line.substring(3);
+                addNewBlock('purejs');
+                lines.push(line);
+
+                if (directive == 'shorthand' || directive == 'purejs') {
                     scriptMode = directive;
 
                 } else if (directive == 'debug') {
                     this.debug = true;
 
                 } else { 
-                    const includeDirMatch = line.match(/^=setIncludeDir\(['"](.*)["']\)$/);
-                    const includeMatch = line.match(/^=include\(['"](.*)["']\)$/);
+                    const includeDirMatch = line.match(/^\/\/=setIncludeDir\(['"](.*)["']\)$/);
+                    const includeMatch = line.match(/^\/\/=include\(['"](.*)["']\)$/);
 
                     if (includeDirMatch) {
                         includeDir = includeDirMatch[1];
                     } else if (includeMatch) {
                         const includeFile = includeMatch[1];
-                        lines.push(await this.includeScript(scriptMode, includeDir, includeFile));
+                        lines.push(await this.includeScript(includeDir, includeFile));
                     } else {
                         throw new Error(`Error parsing directive: ${directive}`);
                     }
                 }
 
-                addNewBlock();
+                addNewBlock(scriptMode);
             } else {
                 lines.push(line);
             }            
         }
-        addNewBlock();
 
         let result = '';
         for (const block of scriptBlocks) {
             if (block.lines.length) {
+                if (result != '')
+                    result += '\n';
+
                 if (block.mode == 'purejs') {
                     result += block.lines.join('\n');
                 } else {
                     result += this.substShorthand(block.lines.join('\n'));
                 }
-
             }
         }
 
@@ -101,9 +105,9 @@ class JembaRunner {
 
     async prepareScriptFunc(inputLines) {
         this.includedPaths = {};
-        const script = await this.prepareScript(inputLines, this.defaultScriptMode, this.defaultIncludeDir);
+        const script = await this.prepareScript(inputLines, this.defaultIncludeDir);
 
-        return `async(db, u) => { \n${script}\n}`;
+        return `async(db, u) => { ${script}\n}`;
     }
 
     async run(inputLines) {
@@ -113,6 +117,7 @@ class JembaRunner {
         this.debug = this.defaultDebug;
 
         const scriptFunc = await this.prepareScriptFunc(inputLines);
+
         const runScript = new Function(`'use strict'; return ${scriptFunc}`)();
 
         if (this.debug)
