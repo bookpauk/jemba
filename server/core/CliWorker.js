@@ -20,8 +20,10 @@ class CliWorker {
 
             await this.runFiles(argv._);
 
+            /*unexpected behavior in sublime
             if (!process.stdin.isTTY)
                 await this.runIO();
+            */
 
         } else if (process.stdin.isTTY) {
             await this.runTTY();
