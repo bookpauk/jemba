@@ -4,7 +4,11 @@ const ayncExit = new (require('./AsyncExit'))();//singleton
 class JembaUtils {
     constructor() {
         this._dbConn = {};
-        this.vars = {};//public
+
+        //public exported methods & objects
+        this.vars = {};
+        this.cwd = process.cwd;
+        this.require = require;
     }
 
     _use(connName, thread) {
@@ -21,6 +25,7 @@ class JembaUtils {
         return db;
     }
 
+    //public exported methods
     use(connName) {
         return this._use(connName);
     }
@@ -28,11 +33,6 @@ class JembaUtils {
     useThread(connName) {
         return this._use(connName, true);
     }
-
-    cwd() {
-        return process.cwd();
-    }
-
 }
 
 module.exports = JembaUtils;
