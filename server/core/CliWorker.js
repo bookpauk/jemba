@@ -48,7 +48,7 @@ class CliWorker {
 `//=shorthand           Allow using shorts inside script:
                         "!." => "await db."
                         "!!." => "return await db."
-                        "$" => "u.vars."                        
+                        "$$" => "u.vars."                        
 //=purejs              Do not use shorthand
 //=setIncludeDir(path) Set script including directory to "path"
 //=include(path)       Load specified script in place

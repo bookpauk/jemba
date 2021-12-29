@@ -19,7 +19,7 @@ class JembaRunner {
     }
 
     substShorthand(text) {
-        return text.replace(/!!\./g, 'return await db.').replace(/!\./g, 'await db.').replace(/\$/g, 'u.vars.');
+        return text.replace(/!!\./g, 'return await db.').replace(/!\./g, 'await db.').replace(/\$\$/g, 'u.vars.');
     }
 
     //recursive
