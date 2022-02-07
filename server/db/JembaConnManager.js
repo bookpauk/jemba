@@ -53,9 +53,7 @@ class JembaConnManager {
             await dbConn.lock({
                 dbPath,
                 create: true,
-                cacheSize: dbConfig.cacheSize,
-                compressed: dbConfig.compressed,
-                forceFileClosing: dbConfig.forceFileClosing
+                softLock: true
             });
 
             if (dbConfig.openAll || forceAutoRepair || dbConfig.autoRepair) {
