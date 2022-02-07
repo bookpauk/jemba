@@ -50,7 +50,7 @@ class JembaConnManager {
             this._db[dbConfig.dbName] = dbConn;
 
             log(`Open "${dbConfig.dbName}" begin`);
-            await dbConn.openDb({
+            await dbConn.lock({
                 dbPath,
                 create: true,
                 cacheSize: dbConfig.cacheSize,
@@ -95,7 +95,7 @@ class JembaConnManager {
     async close() {
         for (const dbConfig of this.config.jembaDb) {
             if (this._db[dbConfig.dbName])
-                await this._db[dbConfig.dbName].closeDb();
+                await this._db[dbConfig.dbName].unlock();
         }
 
         this._db = {};
