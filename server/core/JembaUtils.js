@@ -18,7 +18,7 @@ class JembaUtils {
                 db = new JembaDbThread();
             else
                 db = new JembaDb();
-            ayncExit.add(db.closeDb.bind(db));
+            ayncExit.add(db.unlock.bind(db));
             this._dbConn[connName] = db;
         }
 

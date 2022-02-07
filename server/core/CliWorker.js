@@ -1,4 +1,5 @@
 const fs = require('fs').promises;
+const path = require('path');
 const _ = require('lodash');
 const readline = require('readline');
 
@@ -285,10 +286,15 @@ class CliWorker {
         let inputLines = [];
         for (const file of files) {
             const includeText = await fs.readFile(file, 'utf8');
-            inputLines = inputLines.concat(includeText.split('\n'));
+
+            inputLines = includeText.split('\n');
+
+            this.config.defaultIncludeDir = path.dirname(path.resolve(file));
+            this.jembaRunner = new JembaRunner(this.config);
+
+            await this.processLines(inputLines);
         }
 
-        await this.processLines(inputLines);
     }
 
     async processLines(inputLines) {

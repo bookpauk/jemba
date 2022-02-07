@@ -11,9 +11,9 @@ class JembaRunner {
         if (scriptMode && !['shorthand', 'purejs'].includes(scriptMode))
             throw new Error(`Unknown --script-mode param value: ${scriptMode}`);
 
-        const includeDir = config.argv['include-dir'];
+        this.argvIncludeDir = config.argv['include-dir'];
         this.defaultScriptMode = (scriptMode ? scriptMode : 'shorthand');//'shorthand', 'purejs'
-        this.defaultIncludeDir = (includeDir ? includeDir : process.cwd());
+        this.defaultIncludeDir = (this.argvIncludeDir ? this.argvIncludeDir : (config.defaultIncludeDir ? config.defaultIncludeDir : process.cwd()));
         this.defaultDebug = config.argv['debug'];
         this.defaultDebugFull = config.argv['debug-full'];
     }
