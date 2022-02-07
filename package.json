@@ -1,0 +1,69 @@
+{
+  "name": "jemba",
+  "version": "1.1.0",
+  "description": "Cli tool and UI for JembaDb",
+  "author": "Book Pauk <bookpauk@gmail.com>",
+  "license": "CC0-1.0",
+  "homepage": "https://github.com/bookpauk/jemba#readme",
+  "bugs": {
+    "url": "https://github.com/bookpauk/jemba/issues"
+  },
+  "scripts": {
+    "dev": "nodemon --inspect --ignore server/public --ignore server/data --ignore client --exec 'node server'",
+    "build:client": "webpack --config build/webpack.prod.config.js",
+    "build:linux": "pkg -t node14-linux-x64 -C GZip -o dist/linux/jemba .",
+    "build:win": "pkg -t node14-win-x64 -C GZip -o dist/win/jemba ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bookpauk/jemba.git"
+  },
+  "keywords": [
+    "JembaDb",
+    "Cli"
+  ],
+  "engines": {
+    "node": ">=14.4.0"
+  },
+  "bin": "server/index.js",
+  "devDependencies": {
+    "@babel/core": "^7.16.0",
+    "@babel/eslint-parser": "^7.16.3",
+    "@babel/eslint-plugin": "^7.14.5",
+    "@babel/plugin-proposal-decorators": "^7.16.0",
+    "@babel/preset-env": "^7.16.0",
+    "@vue/compiler-sfc": "^3.2.22",
+    "babel-loader": "^8.2.3",
+    "copy-webpack-plugin": "^9.1.0",
+    "css-loader": "^6.5.1",
+    "css-minimizer-webpack-plugin": "^3.1.3",
+    "eslint": "^8.2.0",
+    "eslint-plugin-vue": "^8.0.3",
+    "html-webpack-plugin": "^5.5.0",
+    "mini-css-extract-plugin": "^2.4.4",
+    "pkg": "^5.5.1",
+    "terser-webpack-plugin": "^5.2.5",
+    "vue-eslint-parser": "^8.0.1",
+    "vue-loader": "^16.8.3",
+    "vue-style-loader": "^4.1.3",
+    "webpack": "^5.64.1",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-middleware": "^5.2.1",
+    "webpack-hot-middleware": "^2.25.1",
+    "webpack-merge": "^5.8.0"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.12.0",
+    "fs-extra": "^10.0.0",
+    "got": "^11.8.2",
+    "jembadb": "^2.0.0",
+    "lodash": "^4.17.21",
+    "minimist": "^1.2.5",
+    "quasar": "^2.3.2",
+    "vue": "^3.2.22",
+    "vue-router": "^4.0.12",
+    "vuex": "^4.0.2",
+    "vuex-persistedstate": "^4.1.0",
+    "ws": "^8.2.3"
+  }
+}
