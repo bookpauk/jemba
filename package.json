@@ -56,7 +56,7 @@
     "@quasar/extras": "^1.12.0",
     "fs-extra": "^10.0.0",
     "got": "^11.8.2",
-    "jembadb": "^2.2.0",
+    "jembadb": "^2.3.0",
     "lodash": "^4.17.21",
     "minimist": "^1.2.5",
     "quasar": "^2.3.2",
