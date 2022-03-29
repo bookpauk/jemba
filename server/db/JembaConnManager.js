@@ -58,7 +58,8 @@ class JembaConnManager {
                 tableDefaults: {
                     cacheSize: dbConfig.cacheSize,
                     compressed: dbConfig.compressed,
-                    forceFileClosing: dbConfig.forceFileClosing
+                    forceFileClosing: dbConfig.forceFileClosing,
+                    typeCompatMode: true,
                 },
             });
 
