@@ -26,10 +26,6 @@ async function init() {
     log('Initializing');
 
     await fs.ensureDir(config.dataDir);
-
-    //connections
-    const jembaConnManager = new (require('./db/JembaConnManager'))();//singleton
-    await jembaConnManager.init(config, argv['auto-repair']);
 }
 
 function showHelp() {
@@ -47,6 +43,9 @@ Options:
 }
 
 async function mainWebUI() {
+    //connections
+    const jembaConnManager = new (require('./db/JembaConnManager'))();//singleton
+    await jembaConnManager.init(config, argv['auto-repair']);
 }
 
 async function mainCli() {

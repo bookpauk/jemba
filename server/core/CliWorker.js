@@ -1,10 +1,9 @@
-const fs = require('fs').promises;
+const fs = require('fs-extra');
 const path = require('path');
 const _ = require('lodash');
 const readline = require('readline');
 
 const ayncExit = new (require('./AsyncExit'))();//singleton
-const jembaConnManager = new (require('../db/JembaConnManager'))();//singleton
 const utils = require('./utils');
 
 const JembaRunner = require('./JembaRunner');
@@ -13,7 +12,9 @@ class CliWorker {
     constructor(config) {
         this.config = config;
         this.jembaRunner = new JembaRunner(config);
-        this.configDb = jembaConnManager.db['config'];
+
+        this.cmdHistoryPath = `${config.dataDir}/cmdHistory.json`;
+        this.cmdHistory = [];
     }
 
     async run() {
@@ -65,20 +66,41 @@ class CliWorker {
         return true;
     }
 
+    async loadCmdHistory() {
+        let loadedHistory = [];
+        if (await fs.pathExists(this.cmdHistoryPath)) {
+            loadedHistory = await fs.readFile(this.cmdHistoryPath, 'utf8');
+            loadedHistory = JSON.parse(loadedHistory);
+        }
+
+        const joinedHistory = this.cmdHistory.concat(loadedHistory);
+        const uniq = new Set();
+        const result = [];
+        for (const rec of joinedHistory) {
+            if (!uniq.has(rec.time)) {
+                result.push(rec);
+                uniq.add(rec.time);
+            }
+        }
+
+        result.sort((a, b) => b.time - a.time);
+
+        this.cmdHistory = result;
+    }
+
+    async saveCmdHistory() {
+        await this.loadCmdHistory();
+
+        await fs.writeFile(this.cmdHistoryPath, JSON.stringify(this.cmdHistory, null, 2));
+    }
+
     async runTTY() {
         return new Promise((resolve, reject) => { (async() => {
-            const db = this.configDb;
-            const table = 'cli';
-            await db.open({table});
-            let cmdHistory = [];
-            const rows = await db.select({table, where: '@@id(1)'});
-            if (rows.length)
-                cmdHistory = rows[0].data;
+            await this.loadCmdHistory();
 
             readline.emitKeypressEvents(process.stdin);
 
             process.stdin.setRawMode(true);
-
 
             let cmd = '';
             let multiCmd = [];
@@ -97,7 +119,7 @@ class CliWorker {
             let prevKey = '';
             const filterHistory = () => {
                 fhIndex = 0;
-                const result = cmdHistory.filter((item) => (item.indexOf(cmd) == 0));
+                const result = this.cmdHistory.filter((rec) => (rec.cmd.indexOf(cmd) == 0)).map((rec) => rec.cmd);
                 if (result.length) {
                     if (result[0] !== cmd) {
                         result.unshift(cmd);
@@ -170,16 +192,12 @@ class CliWorker {
                         try {
                             writeln();
                             if (cmd.trim() != '') {
-                                if (!cmdHistory.length || cmdHistory[0] !== cmd) {
-                                    cmdHistory.unshift(cmd);
-                                    while (cmdHistory.length > 1000)
-                                        cmdHistory.pop();
+                                if (!this.cmdHistory.length || this.cmdHistory[0].cmd !== cmd) {
+                                    this.cmdHistory.unshift({time: Date.now(), cmd});
+                                    while (this.cmdHistory.length > 1000)
+                                        this.cmdHistory.pop();
 
-                                    await db.insert({
-                                        table,
-                                        replace: true,
-                                        rows: [{id: 1, data: cmdHistory}]
-                                    });
+                                    await this.saveCmdHistory();
                                 }
 
                                 if (!this.processConsoleCommand(cmd)) {
