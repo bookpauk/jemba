@@ -53,7 +53,14 @@ class JembaConnManager {
             await dbConn.lock({
                 dbPath,
                 create: true,
-                softLock: true
+                softLock: true,
+
+                tableDefaults: {
+                    cacheSize: dbConfig.cacheSize,
+                    compressed: dbConfig.compressed,
+                    forceFileClosing: dbConfig.forceFileClosing,
+                    typeCompatMode: true,
+                },
             });
 
             if (dbConfig.openAll || forceAutoRepair || dbConfig.autoRepair) {
@@ -124,7 +131,6 @@ class JembaConnManager {
             table, 
             quietIfExists: true,
         });
-        await db.open({table});
 
         // Get the list of already applied migrations
         let dbMigrations = await db.select({
