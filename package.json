@@ -11,8 +11,8 @@
   "scripts": {
     "dev": "nodemon --inspect --ignore server/public --ignore server/data --ignore client --exec 'node server'",
     "build:client": "webpack --config build/webpack.prod.config.js",
-    "build:linux": "pkg -t node14-linux-x64 -C GZip -o dist/linux/jemba .",
-    "build:win": "pkg -t node14-win-x64 -C GZip -o dist/win/jemba ."
+    "build:linux": "pkg -t node16-linux-x64 -C GZip -o dist/linux/jemba .",
+    "build:win": "pkg -t node16-win-x64 -C GZip -o dist/win/jemba ."
   },
   "repository": {
     "type": "git",
@@ -23,7 +23,7 @@
     "Cli"
   ],
   "engines": {
-    "node": ">=14.4.0"
+    "node": ">=16.16.0"
   },
   "bin": "server/index.js",
   "devDependencies": {
@@ -41,7 +41,7 @@
     "eslint-plugin-vue": "^8.0.3",
     "html-webpack-plugin": "^5.5.0",
     "mini-css-extract-plugin": "^2.4.4",
-    "pkg": "^5.5.1",
+    "pkg": "^5.8.0",
     "terser-webpack-plugin": "^5.2.5",
     "vue-eslint-parser": "^8.0.1",
     "vue-loader": "^16.8.3",
@@ -56,7 +56,7 @@
     "@quasar/extras": "^1.12.0",
     "fs-extra": "^10.0.0",
     "got": "^11.8.2",
-    "jembadb": "^3.0.9",
+    "jembadb": "^5.1.4",
     "lodash": "^4.17.21",
     "minimist": "^1.2.5",
     "quasar": "^2.3.2",
