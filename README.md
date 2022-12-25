@@ -1,3 +1,3 @@
-# JembaDb
+# Jemba
 
-JembaDb - tiny Json Embeddable Appendable Database
+Jemba - cli tool and UI for JembaDb
