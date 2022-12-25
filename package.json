@@ -1,6 +1,6 @@
 {
   "name": "jemba",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Cli tool and UI for JembaDb",
   "author": "Book Pauk <bookpauk@gmail.com>",
   "license": "CC0-1.0",
@@ -55,7 +55,7 @@
   "dependencies": {
     "@quasar/extras": "^1.15.8",
     "fs-extra": "^10.1.0",
-    "jembadb": "^5.1.6",
+    "jembadb": "^5.1.7",
     "lodash": "^4.17.21",
     "minimist": "^1.2.7",
     "quasar": "^2.10.2",
